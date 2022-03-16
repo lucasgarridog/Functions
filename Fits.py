@@ -56,7 +56,7 @@ def Gaussian_fit(x,y):
     return values
 
 def Gaussian_fit_spectra(x,y,plot=True):
-    peaks, _ = find_peaks(y, prominence=100)                 # find the gaussian peaks
+    peaks, _ = find_peaks(y, prominence=300)                 # find the gaussian peaks
     amplitudes = np.zeros((len(peaks),2))                    # amplitudes with their errors will be saved here
     means = np.zeros((len(peaks),2))                         # means with their errors will be saved here
     sigmas = np.zeros((len(peaks),2))                        # std devs with their errors will be saved here
@@ -66,9 +66,9 @@ def Gaussian_fit_spectra(x,y,plot=True):
         init = [y[peaks[i]], x[peaks[i]], (x[1]-x[0])*5]                 # initial guess of the parameters
         k = peaks[i]
         while y[k] > int(y[peaks[i]]/ 2):                                # iterate until it reaches the half height
-            k = k-1
+            k = k+1
 
-        dist = peaks[i] - k                                              # distance between the peak and its half height
+        dist = k - peaks[i]                                              # distance between the peak and its half height
         fit_x = x[peaks[i] - dist:peaks[i] + dist]                       # x fit range
         fit_y = y[peaks[i] - dist:peaks[i] + dist]                       # y fit range
         fit = scipy.optimize.curve_fit(Gaussian, fit_x, fit_y, init)     # fit
@@ -91,10 +91,9 @@ def Gaussian_fit_spectra(x,y,plot=True):
             plt.figure(1)                                         # Plotting
             plt.step(x, y, color="tab:blue", zorder=0)
             plt.fill_between(x, y, step="pre", color="tab:blue", zorder=0)
-            new_x = x[peaks[i] - 2*dist:peaks[i] + 2*dist]
+            new_x = x[peaks[i] - 4*dist:peaks[i] + 4*dist]
             plt.plot(new_x, Gaussian(new_x, amplitudes[i,0], means[i,0], sigmas[i,0]), color="tab:red", zorder=1)
             plt.ylim(0)
-
 
     plt.show()
     values = {'amplitude': amplitudes,              # the fit is returned in a dictionary
