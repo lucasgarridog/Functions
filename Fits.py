@@ -3,6 +3,8 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 
+# This file contains several fit routines and functions
+
 def Linear(x, M, N):
     # Linear function
     # M: slope
@@ -39,7 +41,7 @@ def Gaussian_fit(x,y):
     opt_param_error = np.sqrt(np.diag(opt_param_cov))                       # errors are in the diagonal of the matrix
     A = opt_param[0]                                                        # amplitude of the fit
     MU = opt_param[1]                                                       # mean of the fit
-    SIGMA = opt_param[2]                                                    # std dev of the fit
+    SIGMA = abs(opt_param[2])                                               # std dev of the fit (abs value)
     delta_A = opt_param_error[0]                                            # error of the amplitude
     delta_MU = opt_param_error[1]                                           # error of the mean
     delta_SIGMA = opt_param_error[2]                                        # error of the std dev
@@ -66,7 +68,7 @@ def Gaussian_fit_spectra(x,y,plot=True):
         init = [y[peaks[i]], x[peaks[i]], (x[1]-x[0])*5]                 # initial guess of the parameters
         k = peaks[i]
         while y[k] > int(y[peaks[i]]/ 2):                                # iterate until it reaches the half height
-            k = k+1
+            k = k+1                                                      # fails if the peaks consists of a few bins, care
 
         dist = k - peaks[i]                                              # distance between the peak and its half height
         fit_x = x[peaks[i] - dist:peaks[i] + dist]                       # x fit range
@@ -77,7 +79,7 @@ def Gaussian_fit_spectra(x,y,plot=True):
         opt_param_error = np.sqrt(np.diag(opt_param_cov))                # errors are in the diagonal of the matrix
         amplitudes[i,0] = opt_param[0]                                   # amplitude of the fit
         means[i,0] = opt_param[1]                                        # mean of the fit
-        sigmas[i,0] = opt_param[2]                                       # std dev of the fit
+        sigmas[i,0] = abs(opt_param[2])                                  # std dev of the fit
         amplitudes[i,1] = opt_param_error[0]                             # error of the amplitude
         means[i,1] = opt_param_error[1]                                  # error of the mean
         sigmas[i,1] = opt_param_error[2]                                 # error of the std dev
@@ -91,7 +93,7 @@ def Gaussian_fit_spectra(x,y,plot=True):
             plt.figure(1)                                         # Plotting
             plt.step(x, y, color="tab:blue", zorder=0)
             plt.fill_between(x, y, step="pre", color="tab:blue", zorder=0)
-            new_x = x[peaks[i] - 4*dist:peaks[i] + 4*dist]
+            new_x = np.linspace(peaks[i] - 4*dist,peaks[i] + 4*dist, num=100)
             plt.plot(new_x, Gaussian(new_x, amplitudes[i,0], means[i,0], sigmas[i,0]), color="tab:red", zorder=1)
             plt.ylim(0)
 
