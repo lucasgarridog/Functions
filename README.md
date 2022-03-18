@@ -1,2 +1,2 @@
 # Functions
-Python functions that I have created
+Useful Python functions that I have created
