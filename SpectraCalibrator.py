@@ -17,4 +17,4 @@ def SpectraCalibrator(x, y, energies, plot=False):
         plt.fill_between(calibrated_x, y, step="pre", color="tab:blue", zorder=0)
         plt.ylim(0)
 
-    return fit                                                                 # fit parameters are returned in a dictionary
+    return fit, calibrated_x                                                    # fit parameters are returned in a dictionary
