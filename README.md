@@ -1,5 +1,4 @@
 # Functions
-Useful Python functions that I have created
 
 Fits.py includes several functions and fit routines.
 
