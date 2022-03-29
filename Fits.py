@@ -19,6 +19,8 @@ def Gaussian(x, A, MU, SIGMA):
     return A * np.exp(-(x-MU)**2 / (2*SIGMA**2))
 
 def Linear_fit(x,y):
+    x = np.array(x)
+    y = np.array(y)
     init = [(y[2]-y[1]) / (x[2]-x[1]), 0]                                 # initial guess of the parameters
     fit = scipy.optimize.curve_fit(Linear, x, y, init)                    # fit
     opt_param = fit[0]                                                    # optimal parameters that fit the data
@@ -28,8 +30,13 @@ def Linear_fit(x,y):
     N = opt_param[1]                                                      # intercept of the fit
     delta_M = opt_param_error[0]                                          # error of the slope
     delta_N = opt_param_error[1]                                          # error of the intercept
+    residuals = y - Linear(x, M, N)                                       # calculate residuals
+    ss_res = np.sum(residuals ** 2)                                       # sum of the squared residuals
+    ss_tot = np.sum((y - np.mean(y)) ** 2)                                # total sum of squares
+    r_squared = 1 - (ss_res / ss_tot)                                     # r^2 (goodness of fit)
     values = {'slope': M, '\Delta(slope)': delta_M,                       # the fit is returned in a dictionary
-              'intercept': N, '\Delta(intercept)': delta_N
+              'intercept': N, '\Delta(intercept)': delta_N,
+              'r_squared': r_squared
               }
     return values
 
