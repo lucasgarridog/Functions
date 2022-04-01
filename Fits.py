@@ -34,8 +34,8 @@ def Linear_fit(x,y):
     ss_res = np.sum(residuals ** 2)                                       # sum of the squared residuals
     ss_tot = np.sum((y - np.mean(y)) ** 2)                                # total sum of squares
     r_squared = 1 - (ss_res / ss_tot)                                     # r^2 (goodness of fit)
-    values = {'slope': M, '\Delta(slope)': delta_M,                       # the fit is returned in a dictionary
-              'intercept': N, '\Delta(intercept)': delta_N,
+    values = {'slope': M, 'delta_slope': delta_M,                       # the fit is returned in a dictionary
+              'intercept': N, 'delta_intercept': delta_N,
               'r_squared': r_squared
               }
     return values

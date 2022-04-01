@@ -6,9 +6,9 @@ import numpy as np
 
 def CompassLoader(filename, events=False, plot=False):
     file = uproot.open(filename)                          # open ROOT file
-    if events == True:
+    if events:
         data = file["Data_F"]["Energy"].array()           # for event files, saves the channel of each event
-        if plot == True:                                  # so it needs to be plotted with plt.hist
+        if plot:                                          # so it needs to be plotted with plt.hist
             plt.figure(1)
             plt.hist(data, bins=200)                      # TO BE CONTINUED...
             plt.show()
@@ -24,7 +24,7 @@ def CompassLoader(filename, events=False, plot=False):
         data[1,:,channel] = np.array(channels_array[channel].values)
         data[0,:,channel] = np.arange(len(data[1,:,channel]))
 
-        if plot == True:
+        if plot:
             plt.figure(1)  # plotting
             plt.step(data[0,:,channel], data[1,:,channel], color="tab:blue", zorder=0)
             plt.fill_between(data[0,:,channel], data[1,:,channel], step="pre", color="tab:blue", zorder=0)
