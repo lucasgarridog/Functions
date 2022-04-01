@@ -56,11 +56,11 @@ def Gaussian_fit(x,y):
     delta_FWHM = 2 * np.sqrt(2 * np.log(2)) * delta_SIGMA                   # error of FWHM
     R = 100 * FWHM / MU                                                     # Resolution
     delta_R = R * np.sqrt((delta_FWHM / FWHM) ** 2 + (delta_MU / MU) ** 2)  # error of R
-    values = {'amplitude': A, '\Delta(amplitude)': delta_A,                 # the fit is returned in a dictionary
-              'mean': MU, '\Delta(mean)': delta_MU,
-              'sigma': SIGMA, '\Delta(sigma)': delta_SIGMA,
-              'FWHM': FWHM, '\Delta(FWHM)': delta_SIGMA,
-              'R[%]': R, '\Delta(R[%])': delta_R
+    values = {'amplitude': A, 'delta_amplitude': delta_A,                 # the fit is returned in a dictionary
+              'mean': MU, 'delta_mean': delta_MU,
+              'sigma': SIGMA, 'delta_sigma': delta_SIGMA,
+              'FWHM': FWHM, 'delta_FWHM': delta_SIGMA,
+              'R[%]': R, 'delta_R[%]': delta_R
               }
     return values
 
@@ -96,14 +96,14 @@ def Gaussian_fit_spectra(x,y,plot=True):
             plt.figure(1)                                         # Plotting
             plt.step(x, y, color="tab:blue", zorder=0)
             plt.fill_between(x, y, step="pre", color="tab:blue", zorder=0)
-            plt.plot(x[peaks], y[peaks], "gx")
+            plt.plot(x[peaks[i]], y[peaks[i]], "kx")
             plt.plot(fit_x, Gaussian(fit_x, amplitudes[i,0], means[i,0], sigmas[i,0]), color="tab:red", zorder=1)
             plt.ylim(0)
 
     plt.show()
     values = {'amplitude': amplitudes,              # the fit is returned in a dictionary
               'mean': means,
-              'sigma':sigmas,
+              'sigma': sigmas,
               'FWHM': fwhms,
               'R[%]': resolutions
               }
