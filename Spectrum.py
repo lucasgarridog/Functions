@@ -48,8 +48,8 @@ class Spectrum:
             N = fit.get("intercept")
             N_err = fit.get("delta_intercept")
             r_2 = fit.get("r_squared")
-            text = "m = " + str(M) + " $\pm$ " + str(M_err) + "\n" + "n = " + str(N) + " $\pm$ " + str(N_err) + "\n" + "$r^2$ = " + str(r_2)
-            plt.text(0.14, 0.74, text, transform=fig.transFigure, bbox=dict(facecolor="white"))
+            text = "m = " + "%.2f" % M + " $\pm$ " + "%.2f" % M_err + "\n" + "n = " + "%.0f" % N + " $\pm$ " + "%.0f" % N_err + "\n" + "$r^2$ = " + "%.6f" % r_2
+            plt.text(0.15, 0.74, text, transform=fig.transFigure, bbox=dict(facecolor="white"))
             plt.show()
 
         return calibrated_x, fit
