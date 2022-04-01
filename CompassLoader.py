@@ -8,8 +8,11 @@ def CompassLoader(filename, events=False, plot=False):
     file = uproot.open(filename)                          # open ROOT file
     if events == True:
         data = file["Data_F"]["Energy"].array()           # for event files, saves the channel of each event
-        return data                                       # so it needs to be plotted with plt.hist
-                                                          # this contains all the channels, be careful!
+        if plot == True:                                  # so it needs to be plotted with plt.hist
+            plt.figure(1)
+            plt.hist(data, bins=200)                      # TO BE CONTINUED...
+            plt.show()
+        return data                                       # this contains all the channels, be careful!
 
     channels = np.arange(16)
     channels_array = []
