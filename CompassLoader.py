@@ -25,13 +25,13 @@ def CompassLoader(filename, events=False, plot=False):
         data[0,:,channel] = np.arange(len(data[1,:,channel]))
 
         if plot:
-            plt.figure(1)  # plotting
+            plt.figure(channel)  # plotting
             plt.step(data[0,:,channel], data[1,:,channel], color="tab:blue", zorder=0)
             plt.fill_between(data[0,:,channel], data[1,:,channel], step="pre", color="tab:blue", zorder=0)
             plt.ylim(0)
             plt.title("Channel " + str(channel))
             plt.xlabel("ADC Channel")
             plt.ylabel("Counts")
-            plt.show()
+    plt.show()
 
     return data
