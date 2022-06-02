@@ -17,7 +17,7 @@ class Spectrum:
     def peaks(self):
         """ Finds peaks in the spectrum \n
             returns: peaks indexes in x """
-        peaks, _ = find_peaks(self.yvals, prominence=300)
+        peaks, _ = find_peaks(self.yvals, prominence=600, distance=10) # change prominence if the fit fails
         return peaks
 
     def calibrate(self, energies, plot=False, unit=0):
@@ -105,7 +105,7 @@ class Spectrum:
         else:
             x = self.xvals
         energy_unit = ["keV", "MeV"]
-        plt.figure()
+        # plt.figure()
         plt.step(x, self.yvals, color="tab:blue")
         plt.fill_between(x, self.yvals, color="tab:blue", step="pre")
         plt.ylim(0)
@@ -118,7 +118,7 @@ class Spectrum:
         else:
             plt.xlabel("ADC Channel")
             plt.xlim(xlim)
-        plt.show()
+        # plt.show()
         return
 
     def plot_fit(self, xlim=None, unit=0):
@@ -149,8 +149,8 @@ class Spectrum:
         for i in range(len(peaks)):
             fit_x = x[peaks[i] - int(widths[0][i]):peaks[i] + int(widths[0][i])]     # x fit range
             plt.plot(x[peaks[i]], self.yvals[peaks[i]], "kx")
-            plt.plot(fit_x, Gaussian(fit_x, fit.get("amplitude")[i, 0], fit.get("mean")[i, 0], fit.get("sigma")[i, 0]),color="tab:red")
+            plt.plot(np.linspace(fit_x[0],fit_x[-1]), Gaussian(np.linspace(fit_x[0],fit_x[-1]), fit.get("amplitude")[i, 0], fit.get("mean")[i, 0], fit.get("sigma")[i, 0]),color="tab:red")
 
         plt.ylim(0)
-        plt.show()
+        # plt.show()
         return

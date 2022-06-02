@@ -18,7 +18,7 @@ def Gaussian(x, A, MU, SIGMA):
     # SIGMA: standard deviation
     return A * np.exp(-(x-MU)**2 / (2*SIGMA**2))
 
-def Linear_fit(x,y):
+def Linear_fit(x,y, plot=False):
     x = np.array(x)
     y = np.array(y)
     init = [(y[2]-y[1]) / (x[2]-x[1]), 0]                                 # initial guess of the parameters
@@ -34,10 +34,26 @@ def Linear_fit(x,y):
     ss_res = np.sum(residuals ** 2)                                       # sum of the squared residuals
     ss_tot = np.sum((y - np.mean(y)) ** 2)                                # total sum of squares
     r_squared = 1 - (ss_res / ss_tot)                                     # r^2 (goodness of fit)
-    values = {'slope': M, 'delta_slope': delta_M,                       # the fit is returned in a dictionary
+    values = {'slope': M, 'delta_slope': delta_M,                         # the fit is returned in a dictionary
               'intercept': N, 'delta_intercept': delta_N,
               'r_squared': r_squared
               }
+    if plot:                                                              # plots the regression line and data
+        new_x = np.linspace(x[0], x[-1])                                  # x for the regression line
+        fig = plt.figure(1)
+        plt.plot(x, y, "kx", zorder=1)
+        plt.plot(new_x, Linear(new_x, values.get("slope"), values.get("intercept")), "r--", zorder=0)
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.title("Calibration")
+        M = values.get("slope")
+        M_err = values.get("delta_slope")
+        N = values.get("intercept")
+        N_err = values.get("delta_intercept")
+        r_2 = values.get("r_squared")
+        text = "m = " + "%.3f" % M + " $\pm$ " + "%.3f" % M_err + "\n" + "n = " + "%.3f" % N + " $\pm$ " + "%.3f" % N_err + "\n" + "$r^2$ = " + "%.4f" % r_2
+        plt.text(0.15, 0.74, text, transform=fig.transFigure, bbox=dict(facecolor="white"))
+        plt.show()
     return values
 
 def Gaussian_fit(x,y):
