@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.optimize
+from scipy.special import erf
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks, peak_widths
 
@@ -17,6 +18,9 @@ def Gaussian(x, A, MU, SIGMA):
     # MU: mean
     # SIGMA: standard deviation
     return A * np.exp(-(x-MU)**2 / (2*SIGMA**2))
+
+def SkewedGaussian(X,A,MU,SIGMA, GAMMA):
+    return (A / (np.sqrt(2*np.pi) * SIGMA)) * np.exp(-(X-MU)**2 / (2*SIGMA**2)) * (1+erf((GAMMA*(X-MU)) / (SIGMA*np.sqrt(2))))
 
 def Linear_fit(x,y, plot=False):
     x = np.array(x)
@@ -52,12 +56,13 @@ def Linear_fit(x,y, plot=False):
         N_err = values.get("delta_intercept")
         r_2 = values.get("r_squared")
         text = "m = " + "%.3f" % M + " $\pm$ " + "%.3f" % M_err + "\n" + "n = " + "%.3f" % N + " $\pm$ " + "%.3f" % N_err + "\n" + "$r^2$ = " + "%.4f" % r_2
-        plt.text(0.15, 0.74, text, transform=fig.transFigure, bbox=dict(facecolor="white"))
+        plt.text(0.15, 0.83, text, transform=fig.transFigure, bbox=dict(facecolor="white"))
+        plt.tight_layout()
         plt.show()
     return values
 
 def Gaussian_fit(x,y):
-    init = [max(y), x[0], (x[1] - x[0]) * 5]                                # initial guess of the parameters
+    init = [max(y), x[np.argmax(y)], (x[1] - x[0]) * 5]                     # initial guess of the parameters
     fit = scipy.optimize.curve_fit(Gaussian, x, y, init)                    # fit
     opt_param = fit[0]                                                      # optimal parameters that fit the data
     opt_param_cov = fit[1]                                                  # matrix of covariance
@@ -72,10 +77,31 @@ def Gaussian_fit(x,y):
     delta_FWHM = 2 * np.sqrt(2 * np.log(2)) * delta_SIGMA                   # error of FWHM
     R = 100 * FWHM / MU                                                     # Resolution
     delta_R = R * np.sqrt((delta_FWHM / FWHM) ** 2 + (delta_MU / MU) ** 2)  # error of R
-    values = {'amplitude': A, 'delta_amplitude': delta_A,                 # the fit is returned in a dictionary
+    values = {'amplitude': A, 'delta_amplitude': delta_A,                   # the fit is returned in a dictionary
               'mean': MU, 'delta_mean': delta_MU,
               'sigma': SIGMA, 'delta_sigma': delta_SIGMA,
               'FWHM': FWHM, 'delta_FWHM': delta_SIGMA,
               'R[%]': R, 'delta_R[%]': delta_R
+              }
+    return values
+
+def SkewedGaussian_fit(x,y):
+    init = [max(y), x[np.argmax(y)], (x[np.argmax(y)] - x[0])/3, 1]         # initial guess of the parameters
+    fit = scipy.optimize.curve_fit(SkewedGaussian, x, y, init)              # fit
+    opt_param = fit[0]                                                      # optimal parameters that fit the data
+    opt_param_cov = fit[1]                                                  # matrix of covariance
+    opt_param_error = np.sqrt(np.diag(opt_param_cov))                       # errors are in the diagonal of the matrix
+    A = opt_param[0]                                                        # amplitude of the fit
+    MU = opt_param[1]                                                       # mean of the fit
+    SIGMA = abs(opt_param[2])                                               # std dev of the fit (abs value)
+    GAMMA = opt_param[3]                                                    # skewness
+    delta_A = opt_param_error[0]                                            # error of the amplitude
+    delta_MU = opt_param_error[1]                                           # error of the mean
+    delta_SIGMA = opt_param_error[2]                                        # error of the std dev
+    delta_GAMMA = opt_param_error[3]                                        # error of skewness
+    values = {'amplitude': A, 'delta_amplitude': delta_A,                   # the fit is returned in a dictionary
+              'mean': MU, 'delta_mean': delta_MU,
+              'sigma': SIGMA, 'delta_sigma': delta_SIGMA,
+              'gamma': GAMMA, 'delta_gamma': delta_GAMMA
               }
     return values

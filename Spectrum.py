@@ -14,13 +14,13 @@ class Spectrum:
         self.xvals = xvals                        # x values of the spectrum (ch)
         self.yvals = yvals                        # y values of the spectrum (height of each bin)
 
-    def peaks(self):
+    def peaks(self, prominence=200, distance=10, width=1):
         """ Finds peaks in the spectrum \n
             returns: peaks indexes in x """
-        peaks, _ = find_peaks(self.yvals, prominence=600, distance=10) # change prominence if the fit fails
+        peaks, _ = find_peaks(self.yvals, prominence=prominence, distance=distance, width=width) # change prominence if the fit fails
         return peaks
 
-    def calibrate(self, energies, plot=False, unit=0):
+    def calibrate(self, energies, plot=False, unit=0, prominence=300):
         """ Calibrates the spectrum using the given energies and the peaks found \n
             unit = 0 -> keV (default) \n
             unit = 1 -> MeV \n
@@ -29,7 +29,7 @@ class Spectrum:
         if self.is_calibrated:
             print("Warning: This spectrum is already calibrated")
         energy_unit = ["keV", "MeV"]                                # available units for the x-axis
-        peaks = self.peaks()                                        # finds peaks in the spectrum
+        peaks = self.peaks(prominence=prominence)                   # finds peaks in the spectrum
         peaks_channel = [self.xvals[i] for i in peaks]              # channel where the peaks are
         fit = Linear_fit(peaks_channel, energies)                   # performs linear calibration
         calibrated_x = [fit.get("slope") * i + fit.get("intercept") for i in self.xvals]   # calibrate x axis
@@ -54,24 +54,24 @@ class Spectrum:
 
         return calibrated_x, fit
 
-    def fit_peaks(self):
+    def fit_peaks(self,prominence=200, distance=10, width=1):
         """ Finds peaks in the spectrum and fits them \n
             returns: dictionary with fit parameters & information """
         if self.is_calibrated:
             x = self.Evals
         else:
             x = self.xvals
-        peaks = self.peaks()                                     # finds peaks in the spectrum
-        widths = peak_widths(self.yvals, peaks, rel_height=0.8)  # calculates the width of each peak (at 20% height)
-        amplitudes = np.zeros((len(peaks), 2))                   # amplitudes with their errors will be saved here
-        means = np.zeros((len(peaks), 2))                        # means with their errors will be saved here
-        sigmas = np.zeros((len(peaks), 2))                       # std devs with their errors will be saved here
-        fwhms = np.zeros((len(peaks), 2))                        # fwhms with their errors will be saved here
-        resolutions = np.zeros((len(peaks), 2))                  # resolutions with their errors will be saved here
-        for i in range(len(peaks)):                              # fit each peak
-            init = [self.yvals[peaks[i]], x[peaks[i]], (x[1] - x[0]) * 5]                     # initial guess of the parameters
-            fit_x = x[peaks[i] - int(widths[0][i]):peaks[i] + int(widths[0][i])]              # x fit range
-            fit_y = self.yvals[peaks[i] - int(widths[0][i]):peaks[i] + int(widths[0][i])]     # y fit range
+        peaks = self.peaks(prominence=prominence,distance=distance,width=width)   # finds peaks in the spectrum
+        widths = peak_widths(self.yvals, peaks, rel_height=0.5)        # calculates the width of each peak (at 50% height)
+        amplitudes = np.zeros((len(peaks), 2))                         # amplitudes with their errors will be saved here
+        means = np.zeros((len(peaks), 2))                              # means with their errors will be saved here
+        sigmas = np.zeros((len(peaks), 2))                             # std devs with their errors will be saved here
+        fwhms = np.zeros((len(peaks), 2))                              # fwhms with their errors will be saved here
+        resolutions = np.zeros((len(peaks), 2))                        # resolutions with their errors will be saved here
+        for i in range(len(peaks)):                                    # fit each peak
+            fit_x = x[peaks[i] - int(2*widths[0][i]):peaks[i] + int(2*widths[0][i])]              # x fit range
+            fit_y = self.yvals[peaks[i] - int(2*widths[0][i]):peaks[i] + int(2*widths[0][i])]     # y fit range
+            init = [self.yvals[peaks[i]], x[peaks[i]], fit_x[-1]- fit_x[0]]                       # initial guess of the parameters
             fit = scipy.optimize.curve_fit(Gaussian, fit_x, fit_y, init)                      # fit
             opt_param = fit[0]                                       # optimal parameters that fit the data
             opt_param_cov = fit[1]                                   # matrix of covariance
@@ -109,6 +109,7 @@ class Spectrum:
         plt.step(x, self.yvals, color="tab:blue")
         plt.fill_between(x, self.yvals, color="tab:blue", step="pre")
         plt.ylim(0)
+        plt.xlim(x[0], x[-1])
         plt.ylabel("Counts")
         plt.title("Spectrum")
         plt.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
@@ -121,7 +122,7 @@ class Spectrum:
         # plt.show()
         return
 
-    def plot_fit(self, xlim=None, unit=0):
+    def plot_fit(self, prominence=200, distance=10, width=1, xlim=None, unit=0):
         """ Plots the spectrum and the gaussian fits to its peaks \n
             unit = 0 -> keV (default) \n
             unit = 1 -> MeV \n """
@@ -129,12 +130,12 @@ class Spectrum:
             x = self.Evals
         else:
             x = self.xvals
-        peaks = self.peaks()                                     # finds peaks
-        widths = peak_widths(self.yvals, peaks, rel_height=0.8)  # calculates the width of each peak (at 20% height)
+        peaks = self.peaks(prominence=prominence, distance=distance, width=width)     # finds peaks
+        widths = peak_widths(self.yvals, peaks, rel_height=0.5)  # calculates the width of each peak (at 50% height)
         energy_unit = ["keV", "MeV"]
         plt.figure(1)
-        plt.step(x, self.yvals, color="tab:blue")
-        plt.fill_between(x, self.yvals, color="tab:blue", step="pre")
+        plt.step(x, self.yvals, color="tab:blue", where="mid")
+        plt.fill_between(x, self.yvals, color="tab:blue", step="mid")
         plt.ylim(0)
         plt.ylabel("Counts")
         plt.title("Spectrum + Fits")
@@ -145,12 +146,12 @@ class Spectrum:
         else:
             plt.xlabel("ADC Channel")
             plt.xlim(xlim)
-        fit = self.fit_peaks()                                                       # fit
+        fit = self.fit_peaks(prominence=prominence, distance=distance, width=width)      # fit
         for i in range(len(peaks)):
-            fit_x = x[peaks[i] - int(widths[0][i]):peaks[i] + int(widths[0][i])]     # x fit range
+            fit_x = x[peaks[i] - int(2*widths[0][i]):peaks[i] + int(2*widths[0][i])]     # x fit range
             plt.plot(x[peaks[i]], self.yvals[peaks[i]], "kx")
-            plt.plot(np.linspace(fit_x[0],fit_x[-1]), Gaussian(np.linspace(fit_x[0],fit_x[-1]), fit.get("amplitude")[i, 0], fit.get("mean")[i, 0], fit.get("sigma")[i, 0]),color="tab:red")
+            plt.plot(np.linspace(fit_x[0],fit_x[-1], num=200), Gaussian(np.linspace(fit_x[0],fit_x[-1], num=200), fit.get("amplitude")[i, 0], fit.get("mean")[i, 0], fit.get("sigma")[i, 0]),color="tab:red")
 
         plt.ylim(0)
         # plt.show()
-        return
+        return fit
